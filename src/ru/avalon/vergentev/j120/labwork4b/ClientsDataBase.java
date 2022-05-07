@@ -7,34 +7,34 @@ import java.util.*;
 
 public class ClientsDataBase extends JFrame implements WindowListener, KeyListener {
 
-    JLabel dateReg = new JLabel("Date of registration: ", SwingConstants.RIGHT);
-    JLabel dateRegText = new JLabel(String.valueOf(new Date()));
-    JLabel phone = new JLabel("Phone number: ", SwingConstants.RIGHT);
-    JTextField phoneText = new JTextField();
-    StringBuilder phoneNumber = new StringBuilder();
-    JLabel name = new JLabel("Name: ", SwingConstants.RIGHT);
-    JTextField nameText = new JTextField();
-    JLabel address = new JLabel("Address: ", SwingConstants.RIGHT);
-    JTextField addressText = new JTextField();
-    JLabel dateOfBirth = new JLabel("Date of birth: ", SwingConstants.RIGHT);
-    JTextField dateOfBirthText = new JTextField();
-    JButton add = new JButton("Add");
-    JButton empty1 = new JButton("");
-    JLabel phoneForRemover = new JLabel("Phone for remove client: ", SwingConstants.RIGHT);
-    JTextField phoneTextForRemover = new JTextField();
-    JButton remove = new JButton("Remove");
-    JButton empty2 = new JButton("");
-    JButton showClients = new JButton("Show books");
-    JButton empty3 = new JButton("");
+    private final JLabel dateReg = new JLabel("Date of registration: ", SwingConstants.RIGHT);
+    private final JLabel dateRegText = new JLabel(String.valueOf(new Date()));
+    private final JLabel phone = new JLabel("Phone number: ", SwingConstants.RIGHT);
+    private final JTextField phoneText = new JTextField();
+    private final StringBuilder phoneNumber = new StringBuilder();
+    private final JLabel name = new JLabel("Name: ", SwingConstants.RIGHT);
+    private final JTextField nameText = new JTextField();
+    private final JLabel address = new JLabel("Address: ", SwingConstants.RIGHT);
+    private final JTextField addressText = new JTextField();
+    private final JLabel dateOfBirth = new JLabel("Date of birth: ", SwingConstants.RIGHT);
+    private final JTextField dateOfBirthText = new JTextField();
+    private final JButton add = new JButton("Add");
+    private final JButton empty1 = new JButton("");
+    private final JLabel phoneForRemover = new JLabel("Phone for remove client: ", SwingConstants.RIGHT);
+    private final JTextField phoneTextForRemover = new JTextField();
+    private final JButton remove = new JButton("Remove");
+    private final JButton empty2 = new JButton("");
+    private final JButton showClients = new JButton("Show books");
+    private final JButton empty3 = new JButton("");
 
+    private final File file = new File("clients.dat");
+    private final Properties data = new Properties();
 
-    File file = new File("clients.dat");
-    Properties data = new Properties();
-
-    String[] column = {"PHONE", "DATE", "NAME", "ADDRESS", "DATE OF BIRTH"};
-    JFrame frameForTable  = new JFrame();
-    JTable table;
-    JScrollPane scrollPane;
+    private final String[] column = {"PHONE", "DATE", "NAME", "ADDRESS", "DATE OF BIRTH", "AGE"};
+    private JFrame frameForTable  = new JFrame();
+    private JComboBox<Integer[]> yearComboBox;
+    private JComboBox<Integer[]> monthComboBox;
+    private JComboBox<Integer[]> dayComboBox;
 
     public ClientsDataBase() throws HeadlessException {
         setTitle("Books accounting");
@@ -58,7 +58,7 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
         add(address);
         add(addressText);
         add(dateOfBirth);
-        add(dateOfBirthText);
+        addJComboBoxesForDateBirth();
         add(empty1);
         add(add);
         add.addActionListener(e -> {algorithmIfAddClientButtonIsPushed();});
@@ -72,14 +72,65 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
         showClients.addActionListener(e -> {algorithmIfShowClientsButtonIsPushed();});
     }
 
+    private void addJComboBoxesForDateBirth () {
+        JPanel panelForDateOfBirth = new JPanel();
+        add(panelForDateOfBirth);
+        panelForDateOfBirth.setLayout(new FlowLayout());
+        yearComboBox = new JComboBox(getYearsArray());
+        monthComboBox = new JComboBox(getMonthsArray());
+        dayComboBox = new JComboBox(getDaysArray());
+        panelForDateOfBirth.add(yearComboBox);
+        panelForDateOfBirth.add(monthComboBox);
+        monthComboBox.addItemListener(e -> {
+            panelForDateOfBirth.remove(dayComboBox);
+            dayComboBox = new JComboBox(getDaysArray());
+            panelForDateOfBirth.add(dayComboBox);
+            panelForDateOfBirth.revalidate();
+        });
+        panelForDateOfBirth.add(dayComboBox);
+    }
+
+    //массив количества годов для JComboBox
+    private Integer[] getYearsArray () {
+        int arrayYearLength = (int)(new Date().getTime()/1000/86400/365) + 70;
+        Integer[] yearsArray = new Integer[arrayYearLength + 1];
+        for (int i = 0; i < yearsArray.length; i++) {
+            yearsArray[i] = 1900 + i;
+        }
+        return yearsArray;
+    }
+
+    //массив количества месяцев для JComboBox
+    private Integer[] getMonthsArray () {
+        Integer[] monthsArray = new Integer[12];
+        for (int i = 0; i < monthsArray.length; i++) {
+            monthsArray[i] = i+1;
+        }
+        return monthsArray;
+    }
+
+    //формируем массив дней для JComboBox отвечающей за дни
+    private Integer[] getDaysArray () {
+        Integer[] daysArray;
+        if      ((int)monthComboBox.getSelectedItem() == 2 && (int)yearComboBox.getSelectedItem() % 4 == 0) {daysArray = new Integer[29];}
+        else if ((int)monthComboBox.getSelectedItem() == 2 && (int)yearComboBox.getSelectedItem() % 4 != 0) {daysArray = new Integer[28];}
+        else if ((int)monthComboBox.getSelectedItem() == 4) {daysArray = new Integer[30];}
+        else if ((int)monthComboBox.getSelectedItem() == 6) {daysArray = new Integer[30];}
+        else if ((int)monthComboBox.getSelectedItem() == 9) {daysArray = new Integer[30];}
+        else if ((int)monthComboBox.getSelectedItem() == 11) {daysArray = new Integer[30];}
+        else {daysArray = new Integer[31];}
+        for (int i = 0; i < daysArray.length; i++) {daysArray[i] = i+1;}
+        return daysArray;
+    }
+
     private void addTable () {
         if (frameForTable.isShowing()) {
             frameForTable.dispose();
         } else {
             frameForTable = new JFrame();
-            table = new JTable(getDataFromPropertiesForTable(), column);
-            scrollPane = new JScrollPane(table);
-            frameForTable.setBounds(30, 40, 600, 600);
+            JTable table = new JTable(getDataFromPropertiesForTable(), column);
+            JScrollPane scrollPane = new JScrollPane(table);
+            frameForTable.setBounds(30, 40, 1000, 400);
             frameForTable.add(scrollPane);
         }
     }
@@ -90,14 +141,18 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
             JOptionPane.showMessageDialog(null, "Phone number must have a number", "WARNING", JOptionPane.INFORMATION_MESSAGE);
         } else if (data.containsKey(phoneText.getText())) {
             JOptionPane.showMessageDialog(null, "That phone has another client", "WARNING", JOptionPane.INFORMATION_MESSAGE);
+        } else if (getAge() < 0) {
+            JOptionPane.showMessageDialog(null, "Person has not been borned", "WARNING", JOptionPane.INFORMATION_MESSAGE);
         } else {
             phoneText.getText();
             client.setDateReg(dateRegText.getText().replaceAll("'", ""));
             client.setName(nameText.getText().replaceAll("'", ""));
             client.setAddress(addressText.getText().replaceAll("'", ""));
-            client.setDateOfBirth(dateOfBirthText.getText().replaceAll("'", ""));
+            client.setDateOfBirth(dayComboBox.getSelectedItem() + "." + monthComboBox.getSelectedItem() + "." + yearComboBox.getSelectedItem());
+            client.setAge(String.valueOf(getAge()/365));
             data.setProperty(phoneText.getText(), String.valueOf(client));
             phoneText.setText("");
+            phoneNumber.setLength(0);
             dateRegText.setText(String.valueOf(new Date()));
             nameText.setText("");
             addressText.setText("");
@@ -130,6 +185,7 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
         }
     }
 
+    //формируем данные для таблицы
     private String[][] getDataFromPropertiesForTable() {
         String[][] arrayData = new String[data.size()][];
         int k = 0;
@@ -141,11 +197,32 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
                 else if (j == 3) client.setName(dataEachClientParameters[j]);
                 else if (j == 5) client.setAddress(dataEachClientParameters[j]);
                 else if (j == 7) client.setDateOfBirth(dataEachClientParameters[j]);
+                else if (j == 9) client.setAge(dataEachClientParameters[j]);
             }
-            arrayData[k] = new String[]{(String) i, client.getDateReg(), client.getName(), client.getAddress(), client.getDateOfBirth()};
+            arrayData[k] = new String[]{(String) i, client.getDateReg(), client.getName(), client.getAddress(), client.getDateOfBirth(), client.getAge()};
             k++;
         }
         return arrayData;
+    }
+
+    //считаем возраст
+    public int getAge() {
+        int daysFrom1900ToToday = (int)(new Date().getTime()/1000/86400) + 25567; //25567 = кол-ву дней с 1.1.1900 до 1.1.1970 (в системе исчислений с високосным годом)
+        int daysFrom1900ToChoosedYear = ((int)yearComboBox.getSelectedItem() - 1900)*365 + (((int)yearComboBox.getSelectedItem() - 1900)/4 + 1);
+        int checkMonth = (int)monthComboBox.getSelectedItem();
+        int daysFromJanuaryToChoosedMonth;
+        if (checkMonth == 1 || checkMonth == 3 || checkMonth == 5 || checkMonth == 7 || checkMonth == 8 || checkMonth == 10 || checkMonth == 12) {
+            daysFromJanuaryToChoosedMonth = ((int)monthComboBox.getSelectedItem() - 1)*31;
+        } else if ((int)monthComboBox.getSelectedItem() == 2 && (int)yearComboBox.getSelectedItem() % 4 == 0) {
+            daysFromJanuaryToChoosedMonth = ((int)monthComboBox.getSelectedItem() - 1)*29;
+        } else if ((int)monthComboBox.getSelectedItem() != 2 && (int)yearComboBox.getSelectedItem() % 4 == 0) {
+            daysFromJanuaryToChoosedMonth = ((int)monthComboBox.getSelectedItem() - 1)*28;
+        } else {
+            daysFromJanuaryToChoosedMonth = ((int)monthComboBox.getSelectedItem() - 1)*30;
+        }
+        int daysFromFirstToChoosedDay =  (int)dayComboBox.getSelectedItem() - 1;
+        int daysFrom1900ToSelectedDate = (daysFrom1900ToChoosedYear + daysFromJanuaryToChoosedMonth + daysFromFirstToChoosedDay);
+        return (daysFrom1900ToToday - daysFrom1900ToSelectedDate);
     }
 
     @Override
@@ -208,7 +285,7 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
             case KeyEvent.VK_7: phoneNumber.append(7); break;
             case KeyEvent.VK_8: phoneNumber.append(8); break;
             case KeyEvent.VK_9: phoneNumber.append(9); break;
-            case KeyEvent.VK_BACK_SPACE: phoneNumber.deleteCharAt(phoneNumber.length()-1); break;
+            case KeyEvent.VK_BACK_SPACE: phoneNumber.deleteCharAt(phoneText.getCaretPosition()); break;
         }
         phoneText.setText(String.valueOf(phoneNumber));
     }

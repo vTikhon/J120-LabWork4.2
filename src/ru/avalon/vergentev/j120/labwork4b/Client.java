@@ -5,14 +5,18 @@ public class Client {
     private String name;
     private String address;
     private String dateOfBirth;
+    private String age;
+
+
 
     public Client() {}
 
-    public Client(String dateReg, String name, String address, String dateOfBirth) {
+    public Client(String dateReg, String name, String address, String dateOfBirth, String age) {
         setDateReg(dateReg);
         setName(name);
         setAddress(address);
         setDateOfBirth(dateOfBirth);
+        setAge(age);
     }
 
     @Override
@@ -22,6 +26,7 @@ public class Client {
                 ", name='" + name + '\'' +
                 ", address='" + address + '\'' +
                 ", dateOfBirth='" + dateOfBirth + '\'' +
+                ", age='" + age + '\'' +
                 '}';
     }
 
@@ -56,4 +61,13 @@ public class Client {
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
+
+    public String getAge() {
+        return age;
+    }
+
+    public void setAge(String age) {
+        this.age = age;
+    }
+
 }
