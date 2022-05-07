@@ -5,7 +5,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.Properties;
 
-public class ClientsDataBase extends JFrame implements WindowListener, ActionListener {
+public class ClientsDataBase extends JFrame implements WindowListener {
     JLabel phone = new JLabel("Phone number: ", SwingConstants.RIGHT);
     JTextField phoneText = new JTextField();
     JLabel dateReg = new JLabel("Date of registration: ", SwingConstants.RIGHT);
@@ -41,36 +41,29 @@ public class ClientsDataBase extends JFrame implements WindowListener, ActionLis
         setLocationRelativeTo(null);
         setLayout(new GridLayout(9,2));
         addWindowListener(this);
+        addComponents();
+    }
 
+    private void addComponents () {
         add(phone);
-        addTextField(phoneText);
+        add(phoneText);
         add(dateReg);
-        addTextField(dateRegText);
+        add(dateRegText);
         add(name);
-        addTextField(nameText);
+        add(nameText);
         add(address);
-        addTextField(addressText);
-
+        add(addressText);
         add(empty1);
-        addButton(add);
-
+        add(add);
+        add.addActionListener(e -> {algorithmIfAddClientButtonIsPushed();});
         add(phoneForRemover);
-        addTextField(phoneTextForRemover);
+        add(phoneTextForRemover);
         add(empty2);
-        addButton(remove);
-
+        add(remove);
+        remove.addActionListener(e -> {algorithmIfRemoveBookButtonIsPushed();});
         add(empty3);
-        addButton(showClients);
-    }
-
-    private void addButton (JButton button) {
-        button.addActionListener(this);
-        add(button);
-    }
-
-    private void addTextField (JTextField field) {
-        field.addActionListener(this);
-        add(field);
+        add(showClients);
+        showClients.addActionListener(e -> {algorithmIfShowClientsButtonIsPushed();});
     }
 
     private void addTable () {
@@ -83,13 +76,6 @@ public class ClientsDataBase extends JFrame implements WindowListener, ActionLis
             frameForTable.setBounds(30, 40, 600, 600);
             frameForTable.add(scrollPane);
         }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == add) algorithmIfAddClientButtonIsPushed();
-        else if (e.getSource() == remove) algorithmIfRemoveBookButtonIsPushed();
-        else if (e.getSource() == showClients) algorithmIfShowClientsButtonIsPushed();
     }
 
     private void algorithmIfAddClientButtonIsPushed() {
@@ -126,8 +112,12 @@ public class ClientsDataBase extends JFrame implements WindowListener, ActionLis
     }
 
     private void algorithmIfShowClientsButtonIsPushed() {
-        addTable();
-        frameForTable.setVisible(!frameForTable.isShowing());
+        if (frameForTable.isShowing()) {
+            frameForTable.dispose();
+        } else {
+            addTable();
+            frameForTable.setVisible(!frameForTable.isShowing());
+        }
     }
 
     private String[][] getDataFromPropertiesForTable() {
@@ -135,11 +125,11 @@ public class ClientsDataBase extends JFrame implements WindowListener, ActionLis
         int k = 0;
         for (Object i : data.keySet()) {
             Client client = new Client();
-            String [] dataEachBookParameter = ((String)data.get(i)).split("'");
-            for (int j = 1; j < dataEachBookParameter.length; j = j + 2) {
-                if      (j == 1) client.setDateReg(dataEachBookParameter[j]);
-                else if (j == 3) client.setName(dataEachBookParameter[j]);
-                else if (j == 5) client.setAddress(dataEachBookParameter[j]);
+            String [] dataEachClientParameters = ((String)data.get(i)).split("'");
+            for (int j = 1; j < dataEachClientParameters.length; j = j + 2) {
+                if      (j == 1) client.setDateReg(dataEachClientParameters[j]);
+                else if (j == 3) client.setName(dataEachClientParameters[j]);
+                else if (j == 5) client.setAddress(dataEachClientParameters[j]);
             }
             arrayData[k] = new String[]{(String) i, client.getDateReg(), client.getName(), client.getAddress()};
             k++;
