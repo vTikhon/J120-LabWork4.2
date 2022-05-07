@@ -5,17 +5,19 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 
-public class ClientsDataBase extends JFrame implements WindowListener {
-    JLabel phone = new JLabel("Phone number: ", SwingConstants.RIGHT);
-    JTextField phoneText = new JTextField();
+public class ClientsDataBase extends JFrame implements WindowListener, KeyListener {
+
     JLabel dateReg = new JLabel("Date of registration: ", SwingConstants.RIGHT);
     JLabel dateRegText = new JLabel(String.valueOf(new Date()));
-//    JTextField dateRegText = new JTextField();
+    JLabel phone = new JLabel("Phone number: ", SwingConstants.RIGHT);
+    JTextField phoneText = new JTextField();
+    StringBuilder phoneNumber = new StringBuilder();
     JLabel name = new JLabel("Name: ", SwingConstants.RIGHT);
     JTextField nameText = new JTextField();
     JLabel address = new JLabel("Address: ", SwingConstants.RIGHT);
     JTextField addressText = new JTextField();
-
+    JLabel dateOfBirth = new JLabel("Date of birth: ", SwingConstants.RIGHT);
+    JTextField dateOfBirthText = new JTextField();
     JButton add = new JButton("Add");
     JButton empty1 = new JButton("");
     JLabel phoneForRemover = new JLabel("Phone for remove client: ", SwingConstants.RIGHT);
@@ -25,10 +27,11 @@ public class ClientsDataBase extends JFrame implements WindowListener {
     JButton showClients = new JButton("Show books");
     JButton empty3 = new JButton("");
 
-    File file = new File("books.dat");
+
+    File file = new File("clients.dat");
     Properties data = new Properties();
 
-    String[] column = {"PHONE", "DATE", "NAME", "ADDRESS"};
+    String[] column = {"PHONE", "DATE", "NAME", "ADDRESS", "DATE OF BIRTH"};
     JFrame frameForTable  = new JFrame();
     JTable table;
     JScrollPane scrollPane;
@@ -45,14 +48,17 @@ public class ClientsDataBase extends JFrame implements WindowListener {
     }
 
     private void addComponents () {
-        add(phone);
-        add(phoneText);
         add(dateReg);
         add(dateRegText);
+        add(phone);
+        add(phoneText);
+        phoneText.addKeyListener(this);
         add(name);
         add(nameText);
         add(address);
         add(addressText);
+        add(dateOfBirth);
+        add(dateOfBirthText);
         add(empty1);
         add(add);
         add.addActionListener(e -> {algorithmIfAddClientButtonIsPushed();});
@@ -80,18 +86,22 @@ public class ClientsDataBase extends JFrame implements WindowListener {
 
     private void algorithmIfAddClientButtonIsPushed() {
         Client client = new Client();
-        phoneText.getText();
-        client.setDateReg(dateRegText.getText().replaceAll("'", ""));
-        client.setName(nameText.getText().replaceAll("'", ""));
-        client.setAddress(addressText.getText().replaceAll("'", ""));
-        if (!data.containsKey(phoneText.getText())) {
+        if (phoneNumber.length() == 0) {
+            JOptionPane.showMessageDialog(null, "Phone number must have a number", "WARNING", JOptionPane.INFORMATION_MESSAGE);
+        } else if (data.containsKey(phoneText.getText())) {
+            JOptionPane.showMessageDialog(null, "That phone has another client", "WARNING", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            phoneText.getText();
+            client.setDateReg(dateRegText.getText().replaceAll("'", ""));
+            client.setName(nameText.getText().replaceAll("'", ""));
+            client.setAddress(addressText.getText().replaceAll("'", ""));
+            client.setDateOfBirth(dateOfBirthText.getText().replaceAll("'", ""));
             data.setProperty(phoneText.getText(), String.valueOf(client));
             phoneText.setText("");
             dateRegText.setText(String.valueOf(new Date()));
             nameText.setText("");
             addressText.setText("");
-        } else {
-            JOptionPane.showMessageDialog(null, "That phone has another client", "WARNING", JOptionPane.INFORMATION_MESSAGE);
+            dateOfBirthText.setText("");
         }
         if (frameForTable.isShowing()) {
             frameForTable.dispose();
@@ -130,8 +140,9 @@ public class ClientsDataBase extends JFrame implements WindowListener {
                 if      (j == 1) client.setDateReg(dataEachClientParameters[j]);
                 else if (j == 3) client.setName(dataEachClientParameters[j]);
                 else if (j == 5) client.setAddress(dataEachClientParameters[j]);
+                else if (j == 7) client.setDateOfBirth(dataEachClientParameters[j]);
             }
-            arrayData[k] = new String[]{(String) i, client.getDateReg(), client.getName(), client.getAddress()};
+            arrayData[k] = new String[]{(String) i, client.getDateReg(), client.getName(), client.getAddress(), client.getDateOfBirth()};
             k++;
         }
         return arrayData;
@@ -179,4 +190,26 @@ public class ClientsDataBase extends JFrame implements WindowListener {
     public void windowActivated(WindowEvent e) {}
     @Override
     public void windowDeactivated(WindowEvent e) {}
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
+    @Override
+    public void keyPressed(KeyEvent e) {}
+    @Override
+    public void keyReleased(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_0: phoneNumber.append(0); break;
+            case KeyEvent.VK_1: phoneNumber.append(1); break;
+            case KeyEvent.VK_2: phoneNumber.append(2); break;
+            case KeyEvent.VK_3: phoneNumber.append(3); break;
+            case KeyEvent.VK_4: phoneNumber.append(4); break;
+            case KeyEvent.VK_5: phoneNumber.append(5); break;
+            case KeyEvent.VK_6: phoneNumber.append(6); break;
+            case KeyEvent.VK_7: phoneNumber.append(7); break;
+            case KeyEvent.VK_8: phoneNumber.append(8); break;
+            case KeyEvent.VK_9: phoneNumber.append(9); break;
+            case KeyEvent.VK_BACK_SPACE: phoneNumber.deleteCharAt(phoneNumber.length()-1); break;
+        }
+        phoneText.setText(String.valueOf(phoneNumber));
+    }
 }
