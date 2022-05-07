@@ -33,7 +33,6 @@ public class ClientsDataBase extends JFrame implements WindowListener {
     JTable table;
     JScrollPane scrollPane;
 
-
     public ClientsDataBase() throws HeadlessException {
         setTitle("Books accounting");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
