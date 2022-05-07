@@ -3,13 +3,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.Properties;
+import java.util.*;
 
 public class ClientsDataBase extends JFrame implements WindowListener {
     JLabel phone = new JLabel("Phone number: ", SwingConstants.RIGHT);
     JTextField phoneText = new JTextField();
     JLabel dateReg = new JLabel("Date of registration: ", SwingConstants.RIGHT);
-    JTextField dateRegText = new JTextField();
+    JLabel dateRegText = new JLabel(String.valueOf(new Date()));
+//    JTextField dateRegText = new JTextField();
     JLabel name = new JLabel("Name: ", SwingConstants.RIGHT);
     JTextField nameText = new JTextField();
     JLabel address = new JLabel("Address: ", SwingConstants.RIGHT);
@@ -87,7 +88,7 @@ public class ClientsDataBase extends JFrame implements WindowListener {
         if (!data.containsKey(phoneText.getText())) {
             data.setProperty(phoneText.getText(), String.valueOf(client));
             phoneText.setText("");
-            dateRegText.setText("");
+            dateRegText.setText(String.valueOf(new Date()));
             nameText.setText("");
             addressText.setText("");
         } else {
