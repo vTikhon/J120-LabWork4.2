@@ -86,14 +86,15 @@ public class CompaniesDataBase extends JPanel implements KeyListener {
             company.setDateReg(dateRegTextCompany.getText().replaceAll("'", ""));
             company.setNameCompany(nameTextCompany.getText().replaceAll("'", ""));
             company.setAddressCompany(addressTextCompany.getText().replaceAll("'", ""));
-            company.setDirectorName(directorTextCompany.getText());
-            company.setContactPersonName(contactPersonCompany.getText());
+            company.setDirectorName(directorTextCompany.getText().replaceAll("'", ""));
+            company.setContactPersonName(contactPersonTextCompany.getText().replaceAll("'", ""));
             dataCompanies.setProperty(phoneTextCompany.getText(), String.valueOf(company));
             phoneTextCompany.setText("");
             phoneNumber.setLength(0);
             dateRegTextCompany.setText(String.valueOf(new Date()));
             nameTextCompany.setText("");
             addressTextCompany.setText("");
+            directorTextCompany.setText("");
             contactPersonTextCompany.setText("");
         }
         if (frameForTable.isShowing()) {
