@@ -5,13 +5,15 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 
-public class ClientsDataBase extends JFrame implements WindowListener, KeyListener {
+public class ClientsDataBase extends JPanel implements KeyListener {
+    private final StringBuilder phoneNumber = new StringBuilder();
+    File fileClients = new File("clients.dat");
+    Properties dataClients = new Properties();
 
     private final JLabel dateReg = new JLabel("Date of registration: ", SwingConstants.RIGHT);
     private final JLabel dateRegText = new JLabel(String.valueOf(new Date()));
     private final JLabel phone = new JLabel("Phone number: ", SwingConstants.RIGHT);
     private final JTextField phoneText = new JTextField();
-    private final StringBuilder phoneNumber = new StringBuilder();
     private final JLabel name = new JLabel("Name: ", SwingConstants.RIGHT);
     private final JTextField nameText = new JTextField();
     private final JLabel address = new JLabel("Address: ", SwingConstants.RIGHT);
@@ -19,35 +21,21 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
     private final JLabel dateOfBirth = new JLabel("Date of birth: ", SwingConstants.RIGHT);
     private final JTextField dateOfBirthText = new JTextField();
     private final JButton add = new JButton("Add");
-    private final JButton empty1 = new JButton("");
+    private final JLabel empty1 = new JLabel("");
     private final JLabel phoneForRemover = new JLabel("Phone for remove client: ", SwingConstants.RIGHT);
     private final JTextField phoneTextForRemover = new JTextField();
     private final JButton remove = new JButton("Remove");
-    private final JButton empty2 = new JButton("");
-    private final JButton showClients = new JButton("Show books");
-    private final JButton empty3 = new JButton("");
+    private final JLabel empty2 = new JLabel("");
+    private final JButton showClients = new JButton("Show clients");
+    private final JLabel empty3 = new JLabel("");
 
-    private final File file = new File("clients.dat");
-    private final Properties data = new Properties();
+    private JComboBox<Integer[]> yearComboBox, monthComboBox, dayComboBox;
+    private final String[] titleTableClients = {"PHONE", "DATE", "NAME", "ADDRESS", "DATE OF BIRTH", "AGE"};
+    protected JFrame frameForTable  = new JFrame();
 
-    private final String[] column = {"PHONE", "DATE", "NAME", "ADDRESS", "DATE OF BIRTH", "AGE"};
-    private JFrame frameForTable  = new JFrame();
-    private JComboBox<Integer[]> yearComboBox;
-    private JComboBox<Integer[]> monthComboBox;
-    private JComboBox<Integer[]> dayComboBox;
 
-    public ClientsDataBase() throws HeadlessException {
-        setTitle("Books accounting");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(400, 600);
-        setResizable(false);
-        setLocationRelativeTo(null);
+    public ClientsDataBase() {
         setLayout(new GridLayout(9,2));
-        addWindowListener(this);
-        addComponents();
-    }
-
-    private void addComponents () {
         add(dateReg);
         add(dateRegText);
         add(phone);
@@ -58,7 +46,21 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
         add(address);
         add(addressText);
         add(dateOfBirth);
-        addJComboBoxesForDateBirth();
+        JPanel panelForDateOfBirthInClients = new JPanel();
+        add(panelForDateOfBirthInClients);
+        panelForDateOfBirthInClients.setLayout(new FlowLayout());
+        yearComboBox = new JComboBox(getYearsArray());
+        monthComboBox = new JComboBox(getMonthsArray());
+        dayComboBox = new JComboBox(getDaysArray());
+        panelForDateOfBirthInClients.add(yearComboBox);
+        panelForDateOfBirthInClients.add(monthComboBox);
+        monthComboBox.addItemListener(e -> {
+            panelForDateOfBirthInClients.remove(dayComboBox);
+            dayComboBox = new JComboBox(getDaysArray());
+            panelForDateOfBirthInClients.add(dayComboBox);
+            panelForDateOfBirthInClients.revalidate();
+        });
+        panelForDateOfBirthInClients.add(dayComboBox);
         add(empty1);
         add(add);
         add.addActionListener(e -> {algorithmIfAddClientButtonIsPushed();});
@@ -70,24 +72,6 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
         add(empty3);
         add(showClients);
         showClients.addActionListener(e -> {algorithmIfShowClientsButtonIsPushed();});
-    }
-
-    private void addJComboBoxesForDateBirth () {
-        JPanel panelForDateOfBirth = new JPanel();
-        add(panelForDateOfBirth);
-        panelForDateOfBirth.setLayout(new FlowLayout());
-        yearComboBox = new JComboBox(getYearsArray());
-        monthComboBox = new JComboBox(getMonthsArray());
-        dayComboBox = new JComboBox(getDaysArray());
-        panelForDateOfBirth.add(yearComboBox);
-        panelForDateOfBirth.add(monthComboBox);
-        monthComboBox.addItemListener(e -> {
-            panelForDateOfBirth.remove(dayComboBox);
-            dayComboBox = new JComboBox(getDaysArray());
-            panelForDateOfBirth.add(dayComboBox);
-            panelForDateOfBirth.revalidate();
-        });
-        panelForDateOfBirth.add(dayComboBox);
     }
 
     //массив количества годов для JComboBox
@@ -128,7 +112,7 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
             frameForTable.dispose();
         } else {
             frameForTable = new JFrame();
-            JTable table = new JTable(getDataFromPropertiesForTable(), column);
+            JTable table = new JTable(getDataFromPropertiesForTable(), titleTableClients);
             JScrollPane scrollPane = new JScrollPane(table);
             frameForTable.setBounds(30, 40, 1000, 400);
             frameForTable.add(scrollPane);
@@ -139,7 +123,7 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
         Client client = new Client();
         if (phoneNumber.length() == 0) {
             JOptionPane.showMessageDialog(null, "Phone number must have a number", "WARNING", JOptionPane.INFORMATION_MESSAGE);
-        } else if (data.containsKey(phoneText.getText())) {
+        } else if (dataClients.containsKey(phoneText.getText())) {
             JOptionPane.showMessageDialog(null, "That phone has another client", "WARNING", JOptionPane.INFORMATION_MESSAGE);
         } else if (getAge() < 0) {
             JOptionPane.showMessageDialog(null, "Person has not been borned", "WARNING", JOptionPane.INFORMATION_MESSAGE);
@@ -150,7 +134,7 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
             client.setAddress(addressText.getText().replaceAll("'", ""));
             client.setDateOfBirth(dayComboBox.getSelectedItem() + "." + monthComboBox.getSelectedItem() + "." + yearComboBox.getSelectedItem());
             client.setAge(String.valueOf(getAge()/365));
-            data.setProperty(phoneText.getText(), String.valueOf(client));
+            dataClients.setProperty(phoneText.getText(), String.valueOf(client));
             phoneText.setText("");
             phoneNumber.setLength(0);
             dateRegText.setText(String.valueOf(new Date()));
@@ -167,7 +151,7 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
     private void algorithmIfRemoveBookButtonIsPushed() {
         int resultRemove = JOptionPane.showConfirmDialog(null, "Are you sure want to remove that client from data base ?", "WARNING", JOptionPane.OK_CANCEL_OPTION);
         if (resultRemove == JOptionPane.OK_OPTION) {
-            data.remove(phoneTextForRemover.getText());
+            dataClients.remove(phoneTextForRemover.getText());
             phoneTextForRemover.setText("");
         }
         if (frameForTable.isShowing()) {
@@ -187,11 +171,11 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
 
     //формируем данные для таблицы
     private String[][] getDataFromPropertiesForTable() {
-        String[][] arrayData = new String[data.size()][];
+        String[][] arrayData = new String[dataClients.size()][];
         int k = 0;
-        for (Object i : data.keySet()) {
+        for (Object i : dataClients.keySet()) {
             Client client = new Client();
-            String [] dataEachClientParameters = ((String)data.get(i)).split("'");
+            String [] dataEachClientParameters = ((String)dataClients.get(i)).split("'");
             for (int j = 1; j < dataEachClientParameters.length; j = j + 2) {
                 if      (j == 1) client.setDateReg(dataEachClientParameters[j]);
                 else if (j == 3) client.setName(dataEachClientParameters[j]);
@@ -225,48 +209,28 @@ public class ClientsDataBase extends JFrame implements WindowListener, KeyListen
         return (daysFrom1900ToToday - daysFrom1900ToSelectedDate);
     }
 
-    @Override
-    public void windowOpened(WindowEvent e) {loadData();}
-
     //метод читающий файл и возвращающий данные в память компьютера в виде Properties
-    public Properties loadData () {
+    public Properties loadClientsData () {
         try {
-            if (!file.exists()) file.createNewFile();
-            FileReader fileReader = new FileReader(file);
-            data.load(fileReader);
+            if (!fileClients.exists()) fileClients.createNewFile();
+            FileReader fileReader = new FileReader(fileClients);
+            dataClients.load(fileReader);
             fileReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return data;
+        return dataClients;
     }
 
-    @Override
-    public void windowClosing(WindowEvent e) {
-        storeData();
-        frameForTable.dispose();
-    }
-
-    public void storeData () {
+    public void storeDataClients () {
         try {
-            FileWriter fileWriter = new FileWriter(file, false);
-            data.store(fileWriter, null);
+            FileWriter fileWriter = new FileWriter(fileClients, false);
+            dataClients.store(fileWriter, null);
             fileWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-    @Override
-    public void windowClosed(WindowEvent e) {}
-    @Override
-    public void windowIconified(WindowEvent e) {}
-    @Override
-    public void windowDeiconified(WindowEvent e) {}
-    @Override
-    public void windowActivated(WindowEvent e) {}
-    @Override
-    public void windowDeactivated(WindowEvent e) {}
 
     @Override
     public void keyTyped(KeyEvent e) {}
